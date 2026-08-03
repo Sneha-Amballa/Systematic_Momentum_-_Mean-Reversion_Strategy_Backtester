@@ -1,4 +1,4 @@
-# 📈 Systematic Momentum & Mean-Reversion Strategy Backtester
+# Systematic Momentum & Mean-Reversion Strategy Backtester
 
 A **from-scratch, vectorized backtesting framework** built in Python to research, test, and critically evaluate simple systematic trading signals on **Nifty 50 index data**.
 
@@ -6,7 +6,7 @@ The primary objective of this project is **not to find alpha**, but to build a r
 
 ---
 
-## 📖 Project Overview
+## Project Overview
 
 The project uses **10+ years of historical Nifty 50 market data** to design, implement, and evaluate two widely used systematic trading strategies:
 
@@ -21,7 +21,7 @@ The project also examines **market regime dependence** by analyzing strategy per
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - Download and process **10+ years of historical Nifty 50 data**
 - Build Momentum and Mean-Reversion trading signals
@@ -37,7 +37,7 @@ The project also examines **market regime dependence** by analyzing strategy per
 
 ---
 
-## 📊 Trading Strategies
+## Trading Strategies
 
 ### Momentum Strategy
 - Moving Average Crossover
@@ -49,7 +49,7 @@ The project also examines **market regime dependence** by analyzing strategy per
 
 ---
 
-## 📈 Performance Evaluation
+## Performance Evaluation
 
 The backtesting framework evaluates strategies using:
 
@@ -67,7 +67,7 @@ to assess model robustness and reduce the risk of overfitting.
 
 ---
 
-## 🔍 Research Focus
+## Research Focus
 
 This project emphasizes critical evaluation of systematic trading strategies through:
 
@@ -80,7 +80,7 @@ This project emphasizes critical evaluation of systematic trading strategies thr
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - Python
 - Pandas
@@ -93,6 +93,6 @@ This project emphasizes critical evaluation of systematic trading strategies thr
 
 ---
 
-## 📄 License
+## License
 
 This project is intended for educational and research purposes.
