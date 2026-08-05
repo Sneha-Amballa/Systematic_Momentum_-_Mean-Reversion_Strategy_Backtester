@@ -220,3 +220,129 @@ def validate_clean_data(df: pd.DataFrame, keep_volume: bool) -> None:
             raise DataQualityValidationError(f"Final validation failed: Column '{col}' is stored as object dtype.")
         if not pd.api.types.is_numeric_dtype(df[col]):
             raise DataQualityValidationError(f"Final validation failed: Column '{col}' is not a numeric dtype.")
+
+def validate_indicator_params(df: pd.DataFrame, short_window: int, long_window: int, close_col: str = "Close") -> None:
+    """
+    Validates input parameters for the moving average crossover indicators.
+
+    Checks:
+    - Short and long windows are positive integers.
+    - Short window is strictly less than the long window.
+    - Close column exists in the DataFrame.
+    - The DataFrame contains enough historical observations to calculate the long SMA.
+
+    Args:
+        df (pd.DataFrame): Input market DataFrame.
+        short_window (int): Lookback window for the short moving average.
+        long_window (int): Lookback window for the long moving average.
+        close_col (str): Name of the column containing closing prices.
+
+    Raises:
+        ValueError: If any parameters are mathematically or logically invalid.
+        StructuralValidationError: If the required close column is missing or data is insufficient.
+    """
+    if not isinstance(short_window, int) or not isinstance(long_window, int):
+        raise ValueError("Moving average window sizes must be integers.")
+        
+    if short_window <= 0:
+        raise ValueError(f"Short window must be positive. Got: {short_window}")
+        
+    if long_window <= 0:
+        raise ValueError(f"Long window must be positive. Got: {long_window}")
+        
+    if short_window >= long_window:
+        raise ValueError(
+            f"Short window ({short_window}) must be strictly less than long window ({long_window})."
+        )
+        
+    if close_col not in df.columns:
+        raise StructuralValidationError(f"Required closing price column '{close_col}' not found in DataFrame.")
+        
+    if len(df) < long_window:
+        raise StructuralValidationError(
+            f"Insufficient data. Dataset has {len(df)} rows, but the strategy requires at least "
+            f"{long_window} rows for the long moving average window."
+        )
+
+def validate_signals(df: pd.DataFrame, raw_col: str = "Raw_Signal", exec_col: str = "Execution_Signal", pos_col: str = "Position") -> None:
+    """
+    Validates that the generated strategy signals and positions are correct and bias-free.
+
+    Checks:
+    - Signal columns exist in the DataFrame.
+    - Signal and position values contain only 0 and 1 (or NaN during the warm-up period).
+    - Shift constraint: Execution_Signal[t] == Raw_Signal[t-1] for all t > 0.
+    - No future leakage: Execution_Signal is shifted forward by 1, meaning it does not incorporate today's Raw_Signal.
+    - No missing values in signal columns after the warm-up period.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing closing prices and generated signals.
+        raw_col (str): Column name for the raw trading signals.
+        exec_col (str): Column name for the shifted execution signals.
+        pos_col (str): Column name for the position indicators.
+
+    Raises:
+        DataQualityValidationError: If any signal verification or look-ahead check fails.
+    """
+    for col in [raw_col, exec_col, pos_col]:
+        if col not in df.columns:
+            raise DataQualityValidationError(f"Required signal column '{col}' is missing from DataFrame.")
+
+    raw_series = df[raw_col]
+    exec_series = df[exec_col]
+    pos_series = df[pos_col]
+
+    # 1. Check signal values are binary (0, 1) or NaN
+    for name, series in [(raw_col, raw_series), (exec_col, exec_series), (pos_col, pos_series)]:
+        unique_vals = series.dropna().unique()
+        invalid_vals = [v for v in unique_vals if v not in [0, 1, 0.0, 1.0]]
+        if invalid_vals:
+            raise DataQualityValidationError(
+                f"Column '{name}' contains invalid non-binary signal values: {invalid_vals}. "
+                "Only 0 and 1 are allowed."
+            )
+
+    # 2. Verify look-ahead shift: Execution_Signal must equal Raw_Signal.shift(1)
+    expected_exec = raw_series.shift(1)
+    
+    # We compare indices where expected_exec is not null
+    compare_mask = expected_exec.notna()
+    if not (exec_series[compare_mask] == expected_exec[compare_mask]).all():
+        mismatches = df[exec_series != expected_exec]
+        raise DataQualityValidationError(
+            f"Look-ahead bias check failed. '{exec_col}' does not match '{raw_col}' shifted by 1. "
+            f"Number of mismatches: {len(mismatches)}. First few mismatch dates: {mismatches.index[exec_series != expected_exec][:5].tolist()}"
+        )
+
+    # 3. Position must be equal to execution signal (or direct mapping)
+    if not (pos_series[compare_mask] == exec_series[compare_mask]).all():
+        mismatches = df[pos_series != exec_series]
+        raise DataQualityValidationError(
+            f"Position column mismatch. '{pos_col}' must be equal to '{exec_col}' where defined. "
+            f"First few mismatch dates: {mismatches.index[pos_series != exec_series][:5].tolist()}"
+        )
+
+    # 4. Check for NaNs after the warm-up period
+    first_valid_idx = raw_series.first_valid_index()
+    if first_valid_idx is not None:
+        first_valid_loc = df.index.get_loc(first_valid_idx)
+        
+        nan_count_raw = raw_series.iloc[first_valid_loc:].isna().sum()
+        if nan_count_raw > 0:
+            raise DataQualityValidationError(
+                f"Column '{raw_col}' contains {nan_count_raw} missing values after the strategy warm-up period."
+            )
+
+        exec_start_loc = first_valid_loc + 1
+        if exec_start_loc < len(df):
+            nan_count_exec = exec_series.iloc[exec_start_loc:].isna().sum()
+            if nan_count_exec > 0:
+                raise DataQualityValidationError(
+                    f"Column '{exec_col}' contains {nan_count_exec} missing values after the execution start period."
+                )
+            nan_count_pos = pos_series.iloc[exec_start_loc:].isna().sum()
+            if nan_count_pos > 0:
+                raise DataQualityValidationError(
+                    f"Column '{pos_col}' contains {nan_count_pos} missing values after the execution start period."
+                )
+
