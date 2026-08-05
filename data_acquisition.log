@@ -1,0 +1,113 @@
+2026-08-05 22:44:32 [INFO] main: Initializing Data Acquisition Pipeline...
+2026-08-05 22:44:32 [INFO] main: Setting up project directories...
+2026-08-05 22:44:32 [INFO] src.utils: Created directory: data/raw
+2026-08-05 22:44:32 [INFO] src.utils: Created directory: data/processed
+2026-08-05 22:44:32 [INFO] src.utils: Created directory: notebooks
+2026-08-05 22:44:32 [INFO] src.data_loader: Downloading historical data for ticker '^NSEI' from 2013-01-01 to 2025-01-01...
+2026-08-05 22:44:39 [INFO] src.data_loader: Initiating data validation checks...
+2026-08-05 22:44:39 [INFO] src.data_loader: === Data Statistics ===
+2026-08-05 22:44:39 [INFO] src.data_loader: Number of rows: 2946
+2026-08-05 22:44:39 [INFO] src.data_loader: Start date: 2013-01-02
+2026-08-05 22:44:39 [INFO] src.data_loader: End date: 2024-12-31
+2026-08-05 22:44:39 [INFO] src.data_loader: Missing values per column: {'Volume': 0, 'Low': 0, 'High': 0, 'Open': 0, 'Close': 0}
+2026-08-05 22:44:39 [INFO] src.data_loader: === Data Validation Completed Successfully ===
+2026-08-05 22:44:39 [INFO] src.data_loader: Saving validated dataset locally...
+2026-08-05 22:44:39 [INFO] src.data_loader: Successfully saved CSV dataset to: data/raw/nifty50_raw.csv
+2026-08-05 22:44:39 [INFO] src.data_loader: Successfully saved Parquet dataset to: data/raw/nifty50_raw.parquet
+2026-08-05 22:44:39 [INFO] main: Data Acquisition Pipeline completed successfully!
+2026-08-05 22:54:18 [INFO] main: Initializing Backtesting Research Pipeline...
+2026-08-05 22:54:18 [INFO] main: Raw dataset already exists at 'data/raw/nifty50_raw.parquet'. Skipping acquisition step.
+2026-08-05 22:54:18 [INFO] main: Triggering Step 2: Data Cleaning & Preprocessing...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Starting Data Preprocessing Pipeline...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 1: Loading raw dataset from 'data/raw/nifty50_raw.parquet'...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Raw data loaded successfully: 2946 rows, 5 columns.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Raw Date Range: 2013-01-02 to 2024-12-31
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 2: Running structural validation checks...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Structural validation checks passed.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 3: Running data quality anomaly scan...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Data quality anomaly scan completed.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 4: Handling missing price data...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Dropped 0 rows containing missing price values or duplicate entries. Note: Reindexing to calendar days and forward-filling price values are intentionally avoided to prevent fabricating non-existent trading days, preserving natural market closures and weekends.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 5: Column filter step (keep_volume=False)...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Dropped 'Volume' column as it is configured to be dropped.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 6: Optimizing numeric data types...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Data types optimized. Memory usage: 115.08 KB -> 115.08 KB (0.00% savings).
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 7: Computing mathematical return and range features...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Engineered 5 basic features: ['Simple_Return', 'Log_Return', 'Price_Change', 'Daily_Range', 'Pct_Range']
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 8: Inspecting returns for anomalies (threshold=8.0%)...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Detected 3 daily return outliers exceeding absolute threshold.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Outlier dates: ['2020-03-12', '2020-03-23', '2020-04-07']
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 9: Executing final clean dataset validations...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Final clean dataset validation passed successfully.
+2026-08-05 22:54:18 [INFO] src.preprocessing: Stage 10: Saving processed datasets to disk...
+2026-08-05 22:54:18 [INFO] src.preprocessing: Saved preprocessed parquet dataset to: data/processed/nifty50_clean.parquet
+2026-08-05 22:54:18 [INFO] src.preprocessing: Saved preprocessed CSV dataset to: data/processed/nifty50_clean.csv
+2026-08-05 22:54:18 [INFO] src.preprocessing: =============================================================
+2026-08-05 22:54:18 [INFO] src.preprocessing:                DATA PREPROCESSING SUMMARY                    
+2026-08-05 22:54:18 [INFO] src.preprocessing: =============================================================
+2026-08-05 22:54:18 [INFO] src.preprocessing: Initial Dataset Shape : 2946 rows x 5 cols
+2026-08-05 22:54:18 [INFO] src.preprocessing: Final Dataset Shape   : 2946 rows x 9 cols
+2026-08-05 22:54:18 [INFO] src.preprocessing: Date Range (Initial)  : 2013-01-02 to 2024-12-31
+2026-08-05 22:54:18 [INFO] src.preprocessing: Date Range (Final)    : 2013-01-02 to 2024-12-31
+2026-08-05 22:54:18 [INFO] src.preprocessing: Rows Dropped (NaN/Dup): 0
+2026-08-05 22:54:18 [INFO] src.preprocessing: Columns Dropped       : ['Volume']
+2026-08-05 22:54:18 [INFO] src.preprocessing: Features Created      : ['Simple_Return', 'Log_Return', 'Price_Change', 'Daily_Range', 'Pct_Range']
+2026-08-05 22:54:18 [INFO] src.preprocessing: Outliers Detected     : 3 observations
+2026-08-05 22:54:18 [INFO] src.preprocessing: Initial Memory Usage  : 115.08 KB
+2026-08-05 22:54:18 [INFO] src.preprocessing: Final Memory Usage    : 115.08 KB
+2026-08-05 22:54:18 [INFO] src.preprocessing: Memory Saved          : 0.00%
+2026-08-05 22:54:18 [INFO] src.preprocessing: =============================================================
+2026-08-05 22:54:18 [INFO] main: Step 2: Data Cleaning & Preprocessing completed successfully.
+2026-08-05 22:54:18 [INFO] main: Summary of Flagged Outliers (Returns > 8.0%):
+2026-08-05 22:54:18 [INFO] main: Date: 2020-03-12 | Close: 9590.15 | Return: -8.30% | Change: -449.80
+2026-08-05 22:54:18 [INFO] main: Date: 2020-03-23 | Close: 7610.25 | Return: -12.98% | Change: -335.45
+2026-08-05 22:54:18 [INFO] main: Date: 2020-04-07 | Close: 8792.20 | Return: +8.76% | Change: 345.90
+2026-08-05 22:54:18 [INFO] main: Pipeline executed successfully!
+2026-08-05 22:55:26 [INFO] main: Initializing Backtesting Research Pipeline...
+2026-08-05 22:55:26 [INFO] main: Raw dataset already exists at 'data/raw/nifty50_raw.parquet'. Skipping acquisition step.
+2026-08-05 22:55:26 [INFO] main: Triggering Step 2: Data Cleaning & Preprocessing...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Starting Data Preprocessing Pipeline...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 1: Loading raw dataset from 'data/raw/nifty50_raw.parquet'...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Raw data loaded successfully: 2946 rows, 5 columns.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Raw Date Range: 2013-01-02 to 2024-12-31
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 2: Running structural validation checks...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Structural validation checks passed.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 3: Running data quality anomaly scan...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Data quality anomaly scan completed.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 4: Handling missing price data...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Dropped 0 rows containing missing price values or duplicate entries. Note: Reindexing to calendar days and forward-filling price values are intentionally avoided to prevent fabricating non-existent trading days, preserving natural market closures and weekends.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 5: Column filter step (keep_volume=False)...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Dropped 'Volume' column as it is configured to be dropped.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 6: Optimizing numeric data types...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Data types optimized. Memory usage: 115.08 KB -> 115.08 KB (0.00% savings).
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 7: Computing mathematical return and range features...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Engineered 5 basic features: ['Simple_Return', 'Log_Return', 'Price_Change', 'Daily_Range', 'Pct_Range']
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 8: Inspecting returns for anomalies (threshold=8.0%)...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Detected 3 daily return outliers exceeding absolute threshold.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Outlier dates: ['2020-03-12', '2020-03-23', '2020-04-07']
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 9: Executing final clean dataset validations...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Final clean dataset validation passed successfully.
+2026-08-05 22:55:26 [INFO] src.preprocessing: Stage 10: Saving processed datasets to disk...
+2026-08-05 22:55:26 [INFO] src.preprocessing: Saved preprocessed parquet dataset to: data/processed/nifty50_clean.parquet
+2026-08-05 22:55:26 [INFO] src.preprocessing: Saved preprocessed CSV dataset to: data/processed/nifty50_clean.csv
+2026-08-05 22:55:26 [INFO] src.preprocessing: =============================================================
+2026-08-05 22:55:26 [INFO] src.preprocessing:                DATA PREPROCESSING SUMMARY                    
+2026-08-05 22:55:26 [INFO] src.preprocessing: =============================================================
+2026-08-05 22:55:26 [INFO] src.preprocessing: Initial Dataset Shape : 2946 rows x 5 cols
+2026-08-05 22:55:26 [INFO] src.preprocessing: Final Dataset Shape   : 2946 rows x 9 cols
+2026-08-05 22:55:26 [INFO] src.preprocessing: Date Range (Initial)  : 2013-01-02 to 2024-12-31
+2026-08-05 22:55:26 [INFO] src.preprocessing: Date Range (Final)    : 2013-01-02 to 2024-12-31
+2026-08-05 22:55:26 [INFO] src.preprocessing: Rows Dropped (NaN/Dup): 0
+2026-08-05 22:55:26 [INFO] src.preprocessing: Columns Dropped       : ['Volume']
+2026-08-05 22:55:26 [INFO] src.preprocessing: Features Created      : ['Simple_Return', 'Log_Return', 'Price_Change', 'Daily_Range', 'Pct_Range']
+2026-08-05 22:55:26 [INFO] src.preprocessing: Outliers Detected     : 3 observations
+2026-08-05 22:55:26 [INFO] src.preprocessing: Initial Memory Usage  : 115.08 KB
+2026-08-05 22:55:26 [INFO] src.preprocessing: Final Memory Usage    : 115.08 KB
+2026-08-05 22:55:26 [INFO] src.preprocessing: Memory Saved          : 0.00%
+2026-08-05 22:55:26 [INFO] src.preprocessing: =============================================================
+2026-08-05 22:55:26 [INFO] main: Step 2: Data Cleaning & Preprocessing completed successfully.
+2026-08-05 22:55:26 [INFO] main: Summary of Flagged Outliers (Returns > 8.0%):
+2026-08-05 22:55:26 [INFO] main: Date: 2020-03-12 | Close: 9590.15 | Return: -8.30% | Change: -449.80
+2026-08-05 22:55:26 [INFO] main: Date: 2020-03-23 | Close: 7610.25 | Return: -12.98% | Change: -335.45
+2026-08-05 22:55:26 [INFO] main: Date: 2020-04-07 | Close: 8792.20 | Return: +8.76% | Change: 345.90
+2026-08-05 22:55:26 [INFO] main: Pipeline executed successfully!
