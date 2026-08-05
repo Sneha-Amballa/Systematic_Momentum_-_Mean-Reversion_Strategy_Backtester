@@ -134,10 +134,3 @@ Running the strategy on the Nifty 50 Index from **2013-01-02 to 2024-12-31** (2,
 - **SMA Weights**: Simple Moving Averages weight all data points in the window equally. Recent price movements do not carry more weight than old price movements, which increases the delay in signal generation.
 - **Fixed Parameters**: Fixed 20 and 100 windows do not adapt to changes in market volatility or speed.
 
-### Suggested Improvements
-1. **Exponential Moving Average (EMA)**: Replace SMA with EMA to give higher weight to recent prices:
-   $$EMA_t = P_t \times \left(\frac{2}{N+1}\right) + EMA_{t-1} \times \left(1 - \frac{2}{N+1}\right)$$
-   This reduces indicator lag, allowing faster entries and exits.
-2. **Volatility Filter**: Add an Average True Range (ATR) or Bollinger Band filter to avoid entering trades when volatility is extremely low (detecting sideways consolidation regimes and reducing whipsaws).
-3. **Trend Strength Filter (ADX)**: Integrate the Average Directional Index (ADX) to only trigger crossover trades when ADX > 20/25, confirming a strong trend is present.
-4. **Adaptive Windows**: Use indicators like the Kaufman Adaptive Moving Average (KAMA) that dynamically adjust their smoothing factor based on market efficiency.
