@@ -4,13 +4,15 @@ import sys
 from src.utils import setup_logging, ensure_directories
 from src.data_loader import download_ticker_data, validate_data, save_data
 from src.preprocessing import DataPreprocessor
+from src.eda import QuantEDA
 
 def main() -> None:
     """
     Main orchestration script for the Systematic Momentum & Mean-Reversion Strategy Backtester.
-    Runs the pipeline:
-      - Step 1: Data Acquisition (if raw data is missing)
-      - Step 2: Data Cleaning & Preprocessing (always runs when executing main.py)
+    Runs the pipeline steps:
+      - Step 1: Data Acquisition (runs if raw data is missing)
+      - Step 2: Data Cleaning & Preprocessing (runs always)
+      - Step 3: Exploratory Data Analysis (runs always)
     """
     # 1. Initialize logging system
     setup_logging(logging.INFO)
@@ -35,7 +37,8 @@ def main() -> None:
     required_directories = [
         "data/raw",
         "data/processed",
-        "notebooks"
+        "notebooks",
+        "reports/figures"
     ]
 
     try:
@@ -66,18 +69,17 @@ def main() -> None:
         )
         logger.info("Step 2: Data Cleaning & Preprocessing completed successfully.")
 
-        # Print quick look at flagged outliers
-        if not outliers_df.empty:
-            logger.info(f"Summary of Flagged Outliers (Returns > {outlier_threshold * 100:.1f}%):")
-            # Log selected columns for readability
-            cols_to_log = ["Close", "Simple_Return", "Price_Change"]
-            for idx, row in outliers_df[cols_to_log].iterrows():
-                logger.info(
-                    f"Date: {idx.strftime('%Y-%m-%d')} | "
-                    f"Close: {row['Close']:.2f} | "
-                    f"Return: {row['Simple_Return'] * 100:+.2f}% | "
-                    f"Change: {row['Price_Change']:.2f}"
-                )
+        # =====================================================================
+        # STEP 3: Exploratory Data Analysis (EDA)
+        # =====================================================================
+        logger.info("Triggering Step 3: Exploratory Data Analysis...")
+        eda = QuantEDA(
+            data_path=clean_parquet_path,
+            figures_dir="reports/figures",
+            report_path="reports/eda_summary.md"
+        )
+        eda.run_all()
+        logger.info("Step 3: Exploratory Data Analysis completed successfully.")
 
         logger.info("Pipeline executed successfully!")
 

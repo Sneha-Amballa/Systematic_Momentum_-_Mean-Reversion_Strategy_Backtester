@@ -17,15 +17,28 @@ project/
 │         nifty50_clean.parquet
 │         nifty50_clean.csv
 │
+├── notebooks/          # Exploratory Data Analysis & signal design
+│     01_exploratory_data_analysis.ipynb
+│
+├── reports/            # Research summaries and generated figures
+│   ├── eda_summary.md  # Compiled quants findings report
+│   └── figures/        # High-DPI publication-quality plots (Matplotlib)
+│         01_price_time_series.png
+│         06_returns_distribution_plots.png
+│         07_rolling_volatility_comparison.png
+│         12_monthly_returns_heatmap.png
+│         15_market_regime_exploration.png
+│         ...
+│
 ├── src/
 │   ├── data_loader.py  # Step 1: Data download, MultiIndex cleaning, raw validation
 │   ├── preprocessing.py# Step 2: Data Preprocessor pipeline (11 stages)
 │   ├── validators.py   # Step 2: Structural validation & data quality checks
+│   ├── eda.py          # Step 3: Statistical calculations and visualizations
 │   └── utils.py        # System utilities (logging config, directories checking)
 │
 ├── logs/
 │
-├── notebooks/          # Exploratory Data Analysis & signal design
 ├── requirements.txt    # Python dependencies
 └── main.py             # Pipeline orchestrator
 ```
@@ -35,7 +48,7 @@ project/
 ## Step 1: Data Acquisition
 
 Downloads daily historical market data for the Nifty 50 Index (`^NSEI`) from Yahoo Finance, validates it, and saves it locally.
-* **Period**: `2013-01-01` to `2024-12-31` (using exclusive end date `2025-01-01` to fetch final day).
+* **Period**: `2013-01-01` to `2024-12-31`.
 * **Storage**: CSV (`data/raw/nifty50_raw.csv`) and Parquet (`data/raw/nifty50_raw.parquet`).
 
 ---
@@ -43,24 +56,37 @@ Downloads daily historical market data for the Nifty 50 Index (`^NSEI`) from Yah
 ## Step 2: Data Cleaning & Preprocessing
 
 Cleanses the raw historical market data, checks for quality anomalies, filters columns, optimizes memory footprint, and engineers basic features.
+* **Pruned Data**: Duplicates removed, columns trimmed (`Volume` dropped by default), type optimized to `float64`.
+* **Trading Integrity**: No calendar day fabrication or forward-filling of prices.
+* **Basic Features Engineered**: Simple returns, log returns, close-open price change, absolute high-low range, and percentage high-low range.
 
-### Preprocessing Pipeline Stages
-1. **Stage 1 — Load Raw Dataset**: Loads raw parquet data and logs baseline metrics (shape, date ranges).
-2. **Stage 2 — Structural Validation**: Asserts DataFrame is not empty, index is a `DatetimeIndex`, sorted chronologically, unique (no duplicates), and required columns exist.
-3. **Stage 3 — Data Quality Checks**: Scans and reports duplicate rows, duplicate timestamps, missing values, infinite values, negative/zero prices, and illogical high/low price overlaps. Logs all issues.
-4. **Stage 4 — Handle Missing Data**: Drops rows with missing price values (`Open`/`High`/`Low`/`Close`). Explicitly **avoids forward-filling or calendar day reindexing** to prevent fabricating trading days and preserve natural market closures (weekends/NSE holidays).
-5. **Stage 5 — Column Filter**: Configurable removal of the index volume column (`keep_volume=False` by default) because trading volumes are unreliable for market index instruments.
-6. **Stage 6 — Data Type Optimization**: Casts price fields to standard `float64` for numerical precision and reports memory savings.
-7. **Stage 7 — Feature Engineering**: Computes basic mathematical parameters:
-   * **Daily Simple Return**: $Close_t / Close_{t-1} - 1$
-   * **Daily Log Return**: $\ln(Close_t / Close_{t-1})$
-   * **Daily Price Change**: $Close_t - Open_t$
-   * **Daily Range**: $High_t - Low_t$
-   * **Percentage Range**: $(High_t - Low_t) / Close_t$
-8. **Stage 8 — Outlier Inspection**: Flags and reports days with anomalous returns exceeding a threshold (default $\pm 8\%$) without removing them, as financial tail events are critical for risk models.
-9. **Stage 9 — Final Validation**: Ensures clean output preserves sorting, uniqueness, completeness (no NaNs), and schema dtypes.
-10. **Stage 10 — Save Processed Dataset**: Saves clean data to CSV (`data/processed/nifty50_clean.csv`) and Parquet (`data/processed/nifty50_clean.parquet`).
-11. **Stage 11 — Preprocessing Quality Report**: Emits a console summary logging row count changes, dropped items, created features, outlier count, and memory footprint difference.
+---
+
+## Step 3: Exploratory Data Analysis (EDA)
+
+Evaluates dataset structures, calculates descriptive statistics, runs statistical stationarity and normality tests, analyzes calendar seasonalities, and plots price/volatility behaviors.
+
+### Analytical Operations
+1. **Section 1 & 2: Dataset Overview & Quality**: Reports shape, dtypes, memory footprint, null counts, duplicate checks, and completeness ratios.
+2. **Section 3: Descriptive Statistics**: Calculates mean, median, standard deviation, interquartile range (IQR), and coefficient of variation (CV) for all columns.
+3. **Section 4: Price Behaviour Analysis**: Visualizes levels, intraday price range, daily changes, and cumulative compounded growth.
+4. **Section 5: Returns Profile**: Analyzes return distribution via histograms, KDE fits, boxplots, violins, and Normal Q-Q plots.
+5. **Section 6 & 10: Rolling Analysis**: Compares rolling 20, 50, and 100-day annualized volatilities and min-max boundaries.
+6. **Section 7: Distribution Shape & Normality**:
+   * Computes **Skewness** and **Excess Kurtosis** (leptokurtic confirmation).
+   * Runs the **Jarque-Bera Test** to verify if return distributions follow a normal curve.
+7. **Section 8: Stationarity Testing**:
+   * Runs **Augmented Dickey-Fuller (ADF)** and **KPSS** tests on Close levels ($I(1)$ series) and Daily Returns ($I(0)$ series) to confirm stationarity requirements for time series modeling.
+8. **Section 9: Correlation Matrices**: Generates correlation matrices, pair plots, and heatmaps.
+9. **Section 11: Extreme Days**: Ranks top 20 positive/negative return days, intraday swings, and gap openings.
+10. **Section 12, 13 & 14: Calendar Seasonality**:
+    * Computes annual metrics (Return, Volatility, Max Drawdown, trading counts).
+    * Compiles monthly compounded return heatmaps and monthly return boxplots.
+    * Evaluates day-of-week returns distributions.
+11. **Section 15: Market Regimes**: Identifies consolidation levels and shades historical event regimes (COVID-19 panic of 2020, 2016 consolidation, 2018 correction, 2022 global decline).
+
+### Generated Report
+All numerical outputs and quants findings are generated in the compiled research report **[reports/eda_summary.md](file:///c:/Users/USER/OneDrive/Desktop/Projects/Systematic%20Momentum%20&%20Mean-Reversion%20Strategy%20Backtester/reports/eda_summary.md)**.
 
 ---
 
@@ -76,12 +102,10 @@ pip install -r requirements.txt
 ```
 
 ### 3. Run Pipeline
-Execute the main entry point to run data acquisition (if raw file is missing) and preprocessing pipeline:
+Execute the main entry point to run data acquisition, preprocessing, and the full EDA suite:
 ```bash
 python main.py
 ```
 
-### 4. Outputs Generated
-* **Logs**: `data_acquisition.log` (audit trail)
-* **Raw Folder**: `data/raw/nifty50_raw.csv` and `nifty50_raw.parquet`
-* **Processed Folder**: `data/processed/nifty50_clean.csv` and `nifty50_clean.parquet`
+### 4. Notebook Exploration
+Open the notebook **[notebooks/01_exploratory_data_analysis.ipynb](file:///c:/Users/USER/OneDrive/Desktop/Projects/Systematic%20Momentum%20&%20Mean-Reversion%20Strategy%20Backtester/notebooks/01_exploratory_data_analysis.ipynb)** in VS Code to review the statistical calculations and plots inline.
