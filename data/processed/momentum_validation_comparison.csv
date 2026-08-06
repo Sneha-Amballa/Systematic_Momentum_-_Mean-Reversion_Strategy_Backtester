@@ -1,0 +1,15 @@
+Metric,In-Sample (IS),Out-of-Sample (OOS),Degradation
+CAGR,7.42%,13.22%,-78.19%
+Sharpe Ratio,0.7697,1.0807,-40.40%
+Sortino Ratio,1.1353,1.5302,-34.79%
+Calmar Ratio,0.5705,0.9109,-59.68%
+Max Drawdown,13.00%,14.51%,+11.59%
+Win Rate,50.00%,60.00%,-20.00%
+Profit Factor,21.8868,10.9906,+49.78%
+Expectancy,5.47%,15.04%,-174.85%
+Volatility (Ann),9.94%,12.18%,+22.52%
+Beta vs Nifty,0.4812,0.4061,+15.61%
+Alpha (Ann),2.13%,6.92%,-224.67%
+Trade Count,10,5,+50.00%
+Holding Period (TD),109.20,185.20,-69.60%
+Total Turnover,N/A,N/A,N/A

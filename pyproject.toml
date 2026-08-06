@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "systematic_strategy_backtester"
+version = "1.0.0"
+description = "Systematic Momentum & Mean-Reversion Strategy Backtester for Nifty 50 Index"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Quantitative Research Group" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Office/Business :: Financial :: Investment"
+]
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.22.0",
+    "pyarrow>=10.0.0",
+    "matplotlib>=3.5.0",
+    "scipy>=1.8.0",
+    "tabulate>=0.8.9"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

@@ -1,0 +1,3 @@
+Strategy,Stability Score (%),Generalization Score (%),Best Parameters
+Momentum,95.3958424273558,100.0,10/150
+Mean Reversion,79.88912761968649,3.2865770261436396,30/-2.0/-0.5
